@@ -1,6 +1,5 @@
-# group10-project
----
 
+# group10-project
 ## 🧑‍💻 Thông tin cá nhân
 - **Họ tên:** Võ Hiếu Quý  
 - **Vai trò:** Sinh viên 3 — Database Engineer  
