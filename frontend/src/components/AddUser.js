@@ -1,21 +1,25 @@
 import React, { useState } from "react";
 import axios from "axios";
 
-// Component form thêm user
-const AddUserForm = ({ onUserAdded }) => {
+function AddUser({ onUserAdded }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    axios.post("http://localhost:5000/api/users", { name, email })
-      .then(() => {
-        alert("User added!");
-        setName("");
-        setEmail("");
-        onUserAdded(); // cập nhật danh sách user
-      })
-      .catch(err => console.error("Error adding user:", err));
+    try {
+      // Gửi dữ liệu tới backend Node.js
+      await axios.post("http://localhost:5000/api/users", { name, email });
+
+      // Reset input
+      setName("");
+      setEmail("");
+
+      // Thông báo App re-render UserList
+      onUserAdded();
+    } catch (err) {
+      console.error("Lỗi thêm user:", err);
+    }
   };
 
   return (
@@ -37,6 +41,6 @@ const AddUserForm = ({ onUserAdded }) => {
       <button type="submit">Add User</button>
     </form>
   );
-};
+}
 
-export default AddUserForm;
+export default AddUser;
