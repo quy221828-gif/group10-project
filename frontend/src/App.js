@@ -6,6 +6,7 @@ function App() {
     <div style={{ textAlign: "center" }}>
       <h1>Quản lý User (React + MongoDB)</h1>
       <UserList />
+      <p>Frontend version running ✅</p>
     </div>
   );
 }
