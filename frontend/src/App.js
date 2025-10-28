@@ -1,12 +1,10 @@
 import React from "react";
 import UserList from "./components/UserList";
-import AddUser from "./components/AddUser";
 
 function App() {
   return (
-    <div>
-      <h1>Quản lý User</h1>
-      <AddUser />
+    <div style={{ textAlign: "center" }}>
+      <h1>Quản lý User (React + MongoDB)</h1>
       <UserList />
     </div>
   );
