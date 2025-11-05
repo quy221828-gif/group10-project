@@ -21,7 +21,7 @@ function AddUser({ onUserAdded }) {
     }
 
     try {
-      await axios.post("http://172.21.14.105:3000/users", { name, email });
+      await axios.post("http://192.168.38.34:3000/users", { name, email });
       alert("✅ Thêm user thành công!");
       setName("");
       setEmail("");

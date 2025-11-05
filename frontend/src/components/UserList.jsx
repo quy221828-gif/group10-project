@@ -1,110 +1,75 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import AddUser from "./AddUser";
+import { logout } from "../services/authService";
 
-function UserList() {
+export default function UserList({ token: tokenProp }) {
   const [users, setUsers] = useState([]);
-  const [editingUser, setEditingUser] = useState(null);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const token = tokenProp || localStorage.getItem("token");
 
-  // ✅ Lấy dữ liệu khi load trang
   const fetchUsers = async () => {
     try {
-      const res = await axios.get("http://172.21.14.105:3000/users");
+      const res = await axios.get("http://192.168.38.34:3000/users", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setUsers(res.data);
-    } catch (error) {
-      console.error("Lỗi khi tải user:", error);
+    } catch (err) {
+      console.error(err);
+      if (err.response && err.response.status === 401) {
+        logout();
+        navigate("/login");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
-
-  // ✅ Xóa user
   const handleDelete = async (id) => {
     if (!window.confirm("Bạn có chắc muốn xóa user này?")) return;
     try {
-      await axios.delete(`http://172.21.14.105:3000/users/${id}`);
-      setUsers(users.filter((u) => u._id !== id));
-    } catch (error) {
-      console.error("Lỗi khi xóa user:", error);
-    }
-  };
-
-  // ✅ Chỉnh sửa
-  const handleEdit = (user) => {
-    setEditingUser(user);
-    setName(user.name);
-    setEmail(user.email);
-  };
-
-  // ✅ Cập nhật user
-  const handleUpdate = async (e) => {
-    e.preventDefault();
-
-    if (!name.trim()) {
-      alert("Tên không được để trống");
-      return;
-    }
-
-    if (!/\S+@\S+\.\S+/.test(email)) {
-      alert("Email không hợp lệ");
-      return;
-    }
-
-    try {
-      await axios.put(`http://172.21.14.105:3000/users/${editingUser._id}`, {
-        name,
-        email,
+      await axios.delete(`http://192.168.38.34:3000/users/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
       });
-      alert("✅ Cập nhật user thành công!");
-      setEditingUser(null);
       fetchUsers();
-    } catch (error) {
-      console.error("Lỗi khi cập nhật user:", error);
+    } catch (err) {
+      console.error(err);
+      alert("Xóa user thất bại!");
     }
   };
+
+  useEffect(() => { fetchUsers(); }, [token]);
+
+  if (loading) return <p>Đang tải danh sách người dùng...</p>;
 
   return (
-    <div>
-      <AddUser onUserAdded={fetchUsers} />
-      <h3>Danh sách User</h3>
-
-      {editingUser && (
-        <form onSubmit={handleUpdate}>
-          <h4>Sửa User</h4>
-          <input
-            type="text"
-            placeholder="Tên"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <button type="submit">Lưu</button>
-          <button type="button" onClick={() => setEditingUser(null)}>
-            Hủy
-          </button>
-        </form>
-      )}
-
-      <ul>
-        {users.map((user) => (
-          <li key={user._id}>
-            {user.name} - {user.email}
-            <button onClick={() => handleEdit(user)}>✏️ Sửa</button>
-            <button onClick={() => handleDelete(user._id)}>🗑️ Xóa</button>
-          </li>
-        ))}
-      </ul>
+    <div className="card">
+      <h2>Danh sách người dùng</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Tên</th>
+            <th>Email</th>
+            <th>Avatar</th>
+            <th>Role</th>
+            <th>Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+          {users.map(u => (
+            <tr key={u._id}>
+              <td>{u.name}</td>
+              <td>{u.email}</td>
+              <td>{u.avatar ? <img src={u.avatar} alt="Avatar" style={{ width: 50, borderRadius: "50%" }} /> : "-"}</td>
+              <td>{u.role}</td>
+              <td>
+                <button className="btn red" onClick={() => handleDelete(u._id)}>Xóa</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
-
-export default UserList;
