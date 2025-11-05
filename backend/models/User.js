@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
@@ -24,22 +23,3 @@ userSchema.methods.matchPassword = async function(enteredPassword) {
 };
 
 module.exports = mongoose.model('User', userSchema);
-=======
-const mongoose = require("mongoose");
-
-// Định nghĩa cấu trúc dữ liệu (schema)
-const userSchema = new mongoose.Schema(
-  {
-    name: { type: String, required: true },
-    email: { type: String, required: true, unique: true }, // không trùng email
-  },
-  {
-    collection: "users", // 👉 đặt tên collection rõ ràng
-  }
-);
-
-// Tạo model từ schema
-const User = mongoose.model("User", userSchema);
-
-module.exports = User;
->>>>>>> origin/main
