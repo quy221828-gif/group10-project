@@ -1,65 +1,30 @@
 const User = require('../models/User');
 
-// 📍 Lấy danh sách user
-const getUsers = async (req, res) => {
+// GET /users (Admin)
+exports.getUsers = async (req, res) => {
   try {
-    const users = await User.find();
+    const users = await User.find().select('-password'); // không trả về password
     res.json(users);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
-// 📍 Thêm user mới
-const createUser = async (req, res) => {
-  console.log('req.body:', req.body); // debug
-  const { name, email } = req.body || {};
-  if (!name || !email) {
-    return res.status(400).json({ message: "Name and email are required" });
-  }
+// DELETE /users/:id (Admin hoặc self)
+exports.deleteUser = async (req, res) => {
   try {
-    const user = new User({ name, email });
-    const newUser = await user.save();
-    res.status(201).json(newUser);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
-};
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
 
-// 📍 Cập nhật user
-const updateUser = async (req, res) => {
-  console.log('req.body:', req.body); // debug
-  const { name, email } = req.body || {};
-  if (!name && !email) {
-    return res.status(400).json({ message: "Nothing to update" });
-  }
-  try {
-    const updatedUser = await User.findByIdAndUpdate(
-      req.params.id,
-      { name, email },
-      { new: true }
-    );
-    if (!updatedUser) return res.status(404).json({ message: 'User not found' });
-    res.json(updatedUser);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
-};
-
-// 📍 Xóa user
-const deleteUser = async (req, res) => {
-  try {
-    const deletedUser = await User.findByIdAndDelete(req.params.id);
-    if (!deletedUser) return res.status(404).json({ message: 'User not found' });
-    res.json({ message: 'User deleted successfully' });
+    // Admin hoặc user tự xóa
+    if (req.user.role === 'admin' || req.user._id.toString() === user._id.toString()) {
+      // Sử dụng deleteOne thay vì remove()
+      await User.deleteOne({ _id: user._id });
+      return res.json({ message: 'User deleted successfully' });
+    } else {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
-};
-
-module.exports = {
-  getUsers,
-  createUser,
-  updateUser,
-  deleteUser
 };
